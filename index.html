@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <title>Saitama Techno</title>
+    </head>
+
+
+    <body>
+<div>
+<script type="text/javascript">
+    var adfly_id = 26236919;
+    var popunder_frequency_delay = 0;
+    var adfly_google_compliant = false;
+</script>
+<script src="https://cdn.adf.ly/js/display.js"></script>
+</div>
+      
+<h1>//Saitama Techno</h1>
+<h2>//DO NOT CLICK ANYWHERE! THERE ARE MANY ADS!</h2>
+<h3>//JUST DO THESE COMBINATIONS TO COPY: CTRL-A and CTRL-C</h3>
+<h4>//How to make rc car with arduino ? V1 up V2 // Uzaktan kumandalı araba nasıl yapılır? versiyon 2?</h4>
+
+<pre><code>
+//transmitter code:
+
+#include <SPI.h> 
+#include <nRF24L01.h>
+#include <RF24.h>
+
+
+#define CE_PIN   9
+#define CSN_PIN 10
+#define x_axis 2 // x axis
+#define y_axis 3 //y axis
+#define button1 A0 // joystick button
+#define button2 A1 // A button
+#define button3 A2 // B button
+#define button4 A3 // C button
+#define button5 A4 // D button
+#define button6 A5 // E button
+#define button7 7 // F button
+
+
+
+
+const uint64_t pipe = 0xE8E8F0F0E1LL; 
+RF24 radio(CE_PIN, CSN_PIN); 
+int data[9];  
+
+void setup() 
+{
+  Serial.begin(9600);
+  radio.begin();
+  radio.openWritingPipe(pipe);
+  pinMode(button1, INPUT);
+  pinMode(button2, INPUT);
+  pinMode(button3, INPUT);
+  pinMode(button4, INPUT);
+  pinMode(button5, INPUT);
+  pinMode(button6, INPUT);
+  pinMode(button7, INPUT);
+}
+
+void loop()   
+{
+
+  data[0] = analogRead(x_axis);
+  data[1] = analogRead(y_axis);
+  data[2] = digitalRead(button1);
+  data[3] = digitalRead(button2);
+  data[4] = digitalRead(button3);
+  data[5] = digitalRead(button4);
+  data[6] = digitalRead(button5);
+  data[7] = digitalRead(button6);
+  data[8] = digitalRead(button7);
+  radio.write( data, sizeof(data) ); 
+ 
+//HATA AYIKLAMA (DEBUG)
+  Serial.print(digitalRead(A0));
+  Serial.print(" ");
+  Serial.print(digitalRead(A1));
+  Serial.print(" ");
+  Serial.print(digitalRead(A2));
+  Serial.print(" ");
+  Serial.print(digitalRead(A3));
+  Serial.print(" ");
+  Serial.print(digitalRead(A4));
+  Serial.print(" ");
+  Serial.print(digitalRead(A5));
+  Serial.print(" ");
+  //Serial.print(digitalRead(BUTON));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//receiver code:
+
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <Servo.h>
+
+#define CE_PIN   9
+#define CSN_PIN 10
+
+int motor1_h = 3;
+int motor1_i = 4;
+int motor1_g = 5;
+Servo servom;
+int led = 2;
+int butonsayac = 0;
+int butondurum = 0;
+int sonbutondurum = 0;
+int buzzer = 7;
+
+//int x_hiz=0;
+//int y_hiz=0;
+//int z_hiz=0;
+const uint64_t pipe = 0xE8E8F0F0E1LL;
+
+RF24 radio(CE_PIN, CSN_PIN); 
+
+int data[9]; 
+
+void setup()   
+{
+ pinMode(motor1_h,OUTPUT);
+ pinMode(motor1_i,OUTPUT);
+ pinMode(motor1_g,OUTPUT);
+ pinMode(led,OUTPUT);
+ pinMode(buzzer,OUTPUT);
+ servom.attach(6);
+ 
+  Serial.begin(9600);
+    
+  radio.begin();
+  radio.openReadingPipe(1,pipe);
+  radio.startListening();;
+}
+
+
+void loop() {
+  if ( radio.available() ) //Eğer sinyal algılarsan...
+  {
+
+radio.read( data, sizeof(data) ); 
+    
+Serial.print("data[0]=");
+Serial.println(data[0]);
+Serial.print("data[1]=");
+Serial.println(data[1]);
+Serial.print("data[2]=");
+Serial.println(data[2]);
+Serial.print("data[3]=");
+Serial.println(data[3]);
+Serial.print("data[4]=");
+Serial.println(data[4]);
+Serial.print("data[5]=");
+Serial.println(data[5]);
+Serial.print("data[6]=");
+Serial.println(data[6]);
+Serial.print("data[7]=");
+Serial.println(data[7]);
+Serial.print("data[8]=");
+Serial.println(data[8]);
+
+hareket(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8]);
+
+  }
+}
+
+void hareket(int x_axis, int y_axis, int button1, int button2, int button3, int button4, int button5, int button6, int button7) {
+
+ 
+ butondurum = digitalRead(button4);
+
+if (butondurum != sonbutondurum) { //eğer şuanki buton durumu son buton durumundan 
+                                   //farklıysa yani pasiften aktif olmuşsa
+                                   //veya aktiften basif olmuşsa
+ 
+if (butondurum == HIGH) {     //ve eğer buton durumu aktifse
+butonsayac++;                 //butonsayacını 1 arttır
+}
+delay(50);                    // çift basım hatasını gidermek için 50ms bekle
+}
+ 
+sonbutondurum =butondurum;
+ //x_hiz= map(x_axis,511,1023,0,255);
+//z_hiz= map(x_axis,0,511,255,0);
+ if( button2 == HIGH){
+  digitalWrite(motor1_i,LOW);
+  digitalWrite(motor1_g,HIGH);
+  analogWrite(motor1_h,255);
+
+ }
+ 
+ 
+ else if (button1 == HIGH){
+  digitalWrite(motor1_i,HIGH);
+  digitalWrite(motor1_g,LOW);
+  analogWrite(motor1_h,255);
+ }
+ else {
+  digitalWrite(motor1_i,LOW);
+  digitalWrite(motor1_g,LOW);
+  analogWrite(motor1_h,0);
+ }
+ if (button5 == HIGH){
+  servom.write(120);
+ }
+ 
+ 
+else if (button6 == HIGH){
+  servom.write(160);
+ }
+ else {
+  servom.write(140);
+ }
+ if (butonsayac % 2 == 0) {  //eğer butona 2 kes basılmışsa aktif et ve 0 a eşitle
+digitalWrite(led, HIGH); //ledi yak
+} else {
+digitalWrite(led, LOW);  //4 kere basılmamışsa ledi yakma
+}
+ 
+ if(button3 == HIGH){
+  digitalWrite(buzzer,HIGH);
+ }
+ else{
+  digitalWrite(buzzer,LOW);
+ }
+}
+</code></pre>
+    </body>
+</html>
